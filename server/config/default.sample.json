@@ -1,0 +1,18 @@
+{
+    "server": {
+        "hostname": "example.com",
+        "http_ws_port": 8999,
+        "rpc_poll_rate_seconds": 10,
+        "sendgrid_api_key": "SENDGRID.COM_API_KEY",
+        "jwt_secret": "SECRET1_REPLACE_ME",
+        "jwt_timeout_seconds": 1800,
+        "products_dir": "songs",
+        "mongo_cxn_url": "mongodb://localhost:27017/songshop-btc-db"
+    },
+    "btc": {
+        "rpc_user": "u",
+        "rpc_password": "SECRET2_REPLACE_ME",
+        "rpc_port": 18443,
+        "genesis_hash": "0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206"
+    }
+}

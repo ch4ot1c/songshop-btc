@@ -1,0 +1,109 @@
+<html>
+    <head>
+      <script src="/socket.io/socket.io.js"></script>
+
+      <script src="js/ajax.min.js"></script>
+      <!--<script src="//cdn.rawgit.com/fdaciuk/ajax/v3.0.4/dist/ajax.min.js"></script>-->
+
+      <script>
+
+      // TODO leverage config
+      const SITE_HOSTNAME = window.location.hostname
+      const SITE_URL = window.location.protocol + '//' + (SITE_HOSTNAME || 'localhost') + ':' + (window.location.port || 8999)
+      console.log('Site URL: ', SITE_URL)
+
+      const socket = io() //.connect('http://localhost:8999')
+
+      let userEmail
+      let userAddress
+
+      let products = []
+      let seenTxs = []
+      
+      window.onload = function() {
+        // Require email and btc address
+        userEmail = prompt('Please enter your email, for delivery:', 'me@example.com')
+        userAddress = prompt('Please enter your spending address, containing the UTXO(s) you\'ll be spending:', '1xxx')
+        if (!userEmail || !userAddress) {
+          // TODO base58check validation
+          window.history.back()
+          return
+        }
+
+        handleLoad(userAddress, userEmail)
+          .then(() => console.log('Loaded.'))
+          .catch(err => console.error('Error Loading:\n', err))
+      }
+
+      async function handleLoad(userAddress, userEmail) {
+        const guestbookRes = await fetchAsync('/guestbook', { userAddress: userAddress, userEmail: userEmail })
+        const productsRes = await fetchAsync('/products')
+        products = productsRes.products
+
+        // Diplay products
+        console.info(products)
+        const productsDiv = document.getElementById('products')
+        for (const p of products) {
+          let pDiv = document.createElement('div')
+          pDiv.id = 'product_' + p._id
+
+          let pADiv = document.createElement('div')
+          pADiv.className = 'p_address'
+          pADiv.appendChild(document.createTextNode(p.address_btc))
+
+          let pPDiv = document.createElement('div')
+          pADiv.className = 'p_price'
+          pPDiv.appendChild(document.createTextNode(`${p.price_sats_btc} sats`))
+
+          // TODO qr code from google charts
+
+          pDiv.appendChild(pADiv)
+          pDiv.appendChild(pPDiv)
+          productsDiv.appendChild(pDiv)
+        }
+
+        // Subscribe to socket.io channel for each product
+        subscribeAll(products)
+      }
+
+      function subscribeAll(products) {
+        if (!Array.isArray(products)) return
+        for (const p of products) {
+          //console.info(`Subscribing to product ${p._id}`)
+          socket.on('PRODUCT_' + p._id, msg => {
+            console.log(msg)
+            // TODO 3 msgs - any 0conf, 1conf [me], 6conf [me]
+            // TODO update ui
+          })
+        }
+      }
+
+      // Fetch wrapper for GET and POST
+      async function fetchAsync (path, postData = null) {
+        let response 
+        if (!postData) {
+          response = await fetch(SITE_URL + path)
+          return await response.json()
+        } else {
+          response = await fetch(SITE_URL + path,
+            { 
+              method: 'POST',
+              body: JSON.stringify(postData),
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            })
+          return await response.ok // guestbook: 400 if already exists
+        }
+      }
+
+      </script>
+
+    </head>
+
+    <body>
+      <h1>Shop</h1>
+      <p id='products'></p>
+    </body>
+
+</html>

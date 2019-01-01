@@ -1,0 +1,24 @@
+{
+  "name": "songshop-btc",
+  "version": "1.0.0",
+  "description": "Payment Handler and Email Vender",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jon Layton",
+  "license": "MIT",
+  "dependencies": {
+    "@sendgrid/mail": "^6.3.1",
+    "async-poll": "^0.2.0",
+    "body-parser": "^1.18.3",
+    "config": "^3.0.1",
+    "express": "^4.16.4",
+    "jsonwebtoken": "^8.4.0",
+    "mongoose": "^5.4.0",
+    "mongoose-plugin-autoinc": "^1.1.9",
+    "morgan": "^1.9.1",
+    "socket.io": "^2.2.0",
+    "stdrpc": "^1.0.0"
+  }
+}
