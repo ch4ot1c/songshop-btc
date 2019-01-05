@@ -10,6 +10,7 @@
         "mongo_cxn_url": "mongodb://localhost:27017/songshop-btc-db"
     },
     "btc": {
+        "network": "regtest",
         "rpc_user": "u",
         "rpc_password": "SECRET2_REPLACE_ME",
         "rpc_port": 18443,

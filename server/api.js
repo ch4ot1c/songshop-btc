@@ -15,12 +15,47 @@ const mongoose = require('mongoose')
 const http = require('http')
 const SocketIOServer = require('socket.io')
 
+const rateLimit = require('express-rate-limit')
+
 const db = require('./db/controllers')
 const poller = require('./poller')
+const validation = require('./validation')
 
 // Connections
 let httpServer
 let io
+
+// Per-IP Rate Limiting
+function configureRateLimiter () {
+  const dlLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 15
+  })
+
+  const postLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 10
+  })
+
+  const getLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 100
+  })
+
+  // app.enable('trust proxy') // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
+
+  app.use('/s/', dlLimiter)
+
+  const postRoutes = ['/guestbook']
+  for (const r of postRoutes) {
+    app.use(r, postLimiter)
+  }
+
+  const getRoutes = ['../client/'] // TODO does trailing slash include index.html?
+  for (const r of getRoutes) {
+    app.use(r, getLimiter)
+  }
+}
 
 const app = express()
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -39,19 +74,26 @@ app.use(errorHandler)
 
 app.use(express.static('../client'))
 
+configureRateLimiter()
+
 // Serve homepage
 app.get('/', (req, res) => {
   res.sendFile(path.resolve('../client/index.html'))
 })
 
-
-// TODO - rate limiting per ip for all routes
-// TODO - email, address validation for /guestbook
-
 // Input: { userAddress: '123ABCabc', userEmail: 'me@example.com' }
 // Output: { users: [...] }
 app.post('/guestbook', (req, res) => {
   const user = { address_btc: req.body.userAddress, email: req.body.userEmail }
+
+  if (validation.isValidEmail(user.email)) {
+    const e = Error('Email Address failed regex validation')
+    return res.status(400).send({ error: e.message })
+  }
+  if (validation.isValidAddressBTC(user.address_btc)) {
+    const e = Error('BTC Address failed base58check validation')
+    return res.status(400).send({ error: e.message })
+  }
 
   db.getUserByAddress(user.address_btc).then(prior => {
     if (!prior) {

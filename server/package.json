@@ -1,6 +1,6 @@
 {
   "name": "songshop-btc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Payment Handler and Email Vender",
   "main": "index.js",
   "scripts": {
@@ -11,9 +11,11 @@
   "dependencies": {
     "@sendgrid/mail": "^6.3.1",
     "async-poll": "^0.2.0",
+    "bitcoinjs-lib": "^4.0.2",
     "body-parser": "^1.18.3",
     "config": "^3.0.1",
     "express": "^4.16.4",
+    "express-rate-limit": "^3.3.2",
     "jsonwebtoken": "^8.4.0",
     "mongoose": "^5.4.0",
     "mongoose-plugin-autoinc": "^1.1.9",
